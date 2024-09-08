@@ -17,6 +17,7 @@ name = "packet-binser"
 version = "0.1.0"
 dependencies = [
  "lbytes",
+ "packet-binser-derive",
  "paste",
  "residua-zigzag",
 ]
