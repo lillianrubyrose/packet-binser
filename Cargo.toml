@@ -5,6 +5,10 @@ members = ["packet-binser-derive"]
 name = "packet-binser"
 version = "0.1.1"
 edition = "2021"
+description = "Simple binary (de)serialization library with a main usecase of network packets"
+license = "MIT OR Apache-2.0"
+documentation = "https://docs.rs/packet-binser"
+repository = "https://github.com/lillianrubyrose/packet-binser"
 
 [features]
 default = []
@@ -14,4 +18,4 @@ derive = ["packet-binser-derive"]
 lbytes = "0.1.1"
 paste = "1.0.15"
 residua-zigzag = "0.1.0"
-packet-binser-derive = { path = "./packet-binser-derive", optional = true }
+packet-binser-derive = { path = "./packet-binser-derive", version = "0.1.1", optional = true }

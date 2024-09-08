@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "packet-binser"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "lbytes",
  "packet-binser-derive",
@@ -24,7 +24,7 @@ dependencies = [
 
 [[package]]
 name = "packet-binser-derive"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "packet-binser",
  "proc-macro2",
