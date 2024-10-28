@@ -7,6 +7,9 @@ license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/packet-binser"
 repository = "https://github.com/lillianrubyrose/packet-binser"
 
+[features]
+variable-width-lengths = []
+
 [lib]
 proc-macro = true
 

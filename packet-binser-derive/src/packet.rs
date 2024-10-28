@@ -55,9 +55,14 @@ fn impl_struct(attrs: &[Attribute], data: &DataStruct, ident: Ident) -> Result<T
 		}
 	});
 
+	#[cfg(feature = "variable-width-lengths")]
+	let serialize_header = quote! { ::packet_binser::varint::Variable::<u64>(#header).serialize(buffer)?; };
+	// TODO: wtf to do here
+	#[cfg(not(feature = "variable-width-lengths"))]
+	let serialize_header = quote! { (#header as u16).serialize(buffer)?; };
 	let serialize_fn = quote! {
 		fn serialize<B: ::packet_binser::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), ::packet_binser::lbytes::Error> {
-		  ::packet_binser::varint::Variable::<u64>(#header).serialize(buffer)?;
+		  #serialize_header
 		  #( #fields_serialize )*
 		  Ok(())
 		}

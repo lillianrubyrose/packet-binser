@@ -2,6 +2,8 @@ pub use lbytes;
 pub use lbytes::{BytesReadExt, BytesWriteExt};
 
 pub mod impls;
+
+#[cfg(feature = "varint")]
 pub mod varint;
 
 #[cfg(feature = "derive")]

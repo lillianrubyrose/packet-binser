@@ -1,4 +1,7 @@
-use crate::{varint::Variable, PacketSerde};
+#[cfg(feature = "varint")]
+use crate::varint::Variable;
+use crate::PacketSerde;
+
 use lbytes::{BytesReadExt, BytesWriteExt};
 
 macro_rules! _impl_num {
@@ -43,7 +46,10 @@ impl PacketSerde for bool {
 
 impl<T: PacketSerde, const N: usize> PacketSerde for [T; N] {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), lbytes::Error> {
+		#[cfg(feature = "variable-with-lengths")]
 		Variable(N as u64).serialize(buffer)?;
+		#[cfg(not(feature = "variable-with-lengths"))]
+		(N as u64).serialize(buffer)?;
 
 		for ele in self {
 			ele.serialize(buffer)?;
@@ -53,10 +59,13 @@ impl<T: PacketSerde, const N: usize> PacketSerde for [T; N] {
 	}
 
 	fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, lbytes::Error> {
-		let len = Variable::<u64>::deserialize(buffer)?;
-		let mut vec: Vec<T> = Vec::with_capacity(*len as usize);
+		#[cfg(feature = "variable-width-lengths")]
+		let len = *Variable::<u64>::deserialize(buffer)?;
+		#[cfg(not(feature = "variable-width-lengths"))]
+		let len = u64::deserialize(buffer)?;
+		let mut vec: Vec<T> = Vec::with_capacity(len as usize);
 
-		for _ in 0..*len {
+		for _ in 0..len {
 			vec.push(T::deserialize(buffer)?);
 		}
 
@@ -71,7 +80,10 @@ impl<T: PacketSerde, const N: usize> PacketSerde for [T; N] {
 
 impl<T: PacketSerde> PacketSerde for Vec<T> {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), lbytes::Error> {
+		#[cfg(feature = "variable-with-lengths")]
 		Variable(self.len() as u64).serialize(buffer)?;
+		#[cfg(not(feature = "variable-with-lengths"))]
+		(self.len() as u64).serialize(buffer)?;
 
 		for ele in self {
 			ele.serialize(buffer)?;
@@ -81,10 +93,13 @@ impl<T: PacketSerde> PacketSerde for Vec<T> {
 	}
 
 	fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, lbytes::Error> {
-		let len = Variable::<u64>::deserialize(buffer)?;
-		let mut vec: Vec<T> = Vec::with_capacity(*len as usize);
+		#[cfg(feature = "variable-width-lengths")]
+		let len = *Variable::<u64>::deserialize(buffer)?;
+		#[cfg(not(feature = "variable-width-lengths"))]
+		let len = u64::deserialize(buffer)?;
+		let mut vec: Vec<T> = Vec::with_capacity(len as usize);
 
-		for _ in 0..*len {
+		for _ in 0..len {
 			vec.push(T::deserialize(buffer)?);
 		}
 
@@ -112,7 +127,10 @@ impl<T: PacketSerde> PacketSerde for Option<T> {
 
 impl PacketSerde for String {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), lbytes::Error> {
+		#[cfg(feature = "variable-with-lengths")]
 		Variable(self.len() as u64).serialize(buffer)?;
+		#[cfg(not(feature = "variable-with-lengths"))]
+		(self.len() as u64).serialize(buffer)?;
 		buffer.write_all(self.as_bytes())?;
 		Ok(())
 	}
