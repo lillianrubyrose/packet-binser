@@ -8,7 +8,7 @@ edition = "2021"
 description = "Simple binary (de)serialization library with a main usecase of network packets"
 license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/packet-binser"
-repository = "https://github.com/lillianrubyrose/packet-binser"
+repository = "https://git.sr.ht/~queer/packet-binser"
 
 [features]
 default = []
