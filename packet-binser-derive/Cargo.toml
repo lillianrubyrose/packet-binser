@@ -1,11 +1,11 @@
 [package]
 name = "packet-binser-derive"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "Simple binary (de)serialization library with a main usecase of network packets"
 license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/packet-binser"
-repository = "https://github.com/lillianrubyrose/packet-binser"
+repository = "https://git.sr.ht/~queer/packet-binser"
 
 [features]
 variable-width-lengths = []
