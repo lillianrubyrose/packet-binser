@@ -6,9 +6,10 @@ struct MeowData {
 }
 
 #[derive(Binser)]
+#[repr(u8)]
 enum TestPackets {
 	A(i32),
-	B(MeowData),
+	B(MeowData) = 4,
 	C { a: i32, b: MeowData },
 	D,
 }

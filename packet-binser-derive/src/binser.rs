@@ -33,7 +33,7 @@ fn impl_enum(data: &DataEnum, ident: &Ident) -> Result<TokenStream> {
 				}
 			} else {
 				variant_idx += 1;
-				variant_idx
+				variant_idx - 1
 			};
 
 			if variant.fields.is_empty() {
@@ -94,7 +94,7 @@ fn impl_enum(data: &DataEnum, ident: &Ident) -> Result<TokenStream> {
 				}
 			} else {
 				variant_idx += 1;
-				variant_idx
+				variant_idx - 1
 			};
 
 			if variant.fields.is_empty() {
