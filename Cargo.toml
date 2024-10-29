@@ -3,7 +3,7 @@ members = ["packet-binser-derive"]
 
 [package]
 name = "packet-binser"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "Simple binary (de)serialization library with a main usecase of network packets"
 license = "MIT OR Apache-2.0"
