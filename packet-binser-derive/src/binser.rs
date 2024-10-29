@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 use syn::{Data, DataEnum, DataStruct, DeriveInput, Error, Expr, ExprLit, Ident, Index, Lit, Result};
 
 pub fn impl_binser(input: DeriveInput) -> Result<TokenStream> {
@@ -21,19 +21,63 @@ fn impl_enum(data: &DataEnum, ident: Ident) -> Result<TokenStream> {
 		.iter()
 		.map(|variant| {
 			let ident = &variant.ident;
-			if let Some((_eq, val)) = &variant.discriminant {
+
+			let idx = if let Some((_eq, val)) = &variant.discriminant {
 				match val {
 					Expr::Lit(ExprLit { lit: Lit::Int(int), .. }) => {
 						let value = int.base10_parse::<u16>()?;
 						variant_idx = value;
-						Ok(quote! { Self::#ident => #value, })
+						value
 					}
-					_ => Err(Error::new_spanned(val, "Expected integer literal")),
+					_ => return Err(Error::new_spanned(val, "Expected integer literal")),
 				}
 			} else {
-				let q = quote! { Self::#ident => #variant_idx, };
 				variant_idx += 1;
-				Ok(q)
+				variant_idx
+			};
+
+			if variant.fields.is_empty() {
+				Ok(quote! { Self::#ident => {
+					buffer.write_u16(#idx)?;
+				}})
+			} else {
+				let mut field_idx = 'a';
+				let fields = variant
+					.fields
+					.iter()
+					.map(|field| {
+						if let Some(field_ident) = &field.ident {
+							quote! { #field_ident.serialize(buffer)?; }
+						} else {
+							let ident = format_ident!("{}", field_idx);
+							field_idx = (field_idx as u8 + 1) as char;
+							quote! { #ident.serialize(buffer)?; }
+						}
+					})
+					.collect::<Vec<_>>();
+				let variant_is_struct = variant
+					.fields
+					.iter()
+					.next()
+					.map(|field| field.ident.is_some())
+					.unwrap_or(false); // should never be empty anyway
+				let variant_match = if variant_is_struct {
+					let field_idents = variant.fields.iter().map(|field| {
+						let ident = field.ident.as_ref().unwrap();
+						quote! { #ident, }
+					});
+					quote! { Self::#ident { #(#field_idents)* } }
+				} else {
+					let mut idx = 'a';
+					let field_idents = variant.fields.iter().map(|_| {
+						let ident = format_ident!("{}", idx);
+						let q = quote! { #ident, };
+						idx = (idx as u8 + 1) as char;
+						q
+					});
+					quote! { Self::#ident( #(#field_idents)* ) }
+				};
+				Ok(quote! { #variant_match => { buffer.write_u16(#idx)?; #( #fields )*; } })
 			}
 		})
 		.collect::<Result<Vec<_>>>()?;
@@ -44,28 +88,55 @@ fn impl_enum(data: &DataEnum, ident: Ident) -> Result<TokenStream> {
 		.iter()
 		.map(|variant| {
 			let ident = &variant.ident;
-			if let Some((_eq, val)) = &variant.discriminant {
+			let idx = if let Some((_eq, val)) = &variant.discriminant {
 				match val {
 					Expr::Lit(ExprLit { lit: Lit::Int(int), .. }) => {
 						let value = int.base10_parse::<u16>()?;
-						variant_idx = value + 1;
-						Ok(quote! { #value => Self::#ident, })
+						variant_idx = value;
+						value
 					}
-					_ => Err(Error::new_spanned(val, "Expected integer literal")),
+					_ => return Err(Error::new_spanned(val, "Expected integer literal")),
 				}
 			} else {
-				let q = quote! { #variant_idx => Self::#ident, };
 				variant_idx += 1;
-				Ok(q)
+				variant_idx
+			};
+
+			if variant.fields.is_empty() {
+				Ok(quote! { #idx => Self::#ident, })
+			} else {
+				let fields = variant
+					.fields
+					.iter()
+					.map(|field| {
+						if let Some(field_ident) = &field.ident {
+							quote! { #field_ident: ::packet_binser::Binser::deserialize(buffer)?, }
+						} else {
+							quote! { ::packet_binser::Binser::deserialize(buffer)?, }
+						}
+					})
+					.collect::<Vec<_>>();
+				let variant_is_struct = variant
+					.fields
+					.iter()
+					.next()
+					.map(|field| field.ident.is_some())
+					.unwrap_or(false); // should never be empty anyway
+
+				if variant_is_struct {
+					Ok(quote! { #idx => Self::#ident { #( #fields )* }, })
+				} else {
+					Ok(quote! { #idx => Self::#ident(#( #fields )*), })
+				}
 			}
 		})
 		.collect::<Result<Vec<_>>>()?;
 
 	let serialize_fn = quote! {
 		fn serialize<B: ::packet_binser::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), ::packet_binser::Error> {
-		  buffer.write_u16(match self {
+		  match self {
 			#( #variants_serialize )*
-		  } as u16)?;
+		  }
 		  Ok(())
 		}
 	};

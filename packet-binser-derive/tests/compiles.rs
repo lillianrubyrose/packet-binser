@@ -17,8 +17,8 @@ struct MeowPacket {
 
 #[derive(Binser)]
 enum TestPackets {
-	A,
-	B,
-	C,
+	A(i32),
+	B(MeowData),
+	C { a: i32, b: MeowData },
 	D,
 }
