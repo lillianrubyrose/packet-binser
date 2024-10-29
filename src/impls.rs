@@ -1,4 +1,4 @@
-#[cfg(feature = "varint")]
+#[cfg(feature = "variable-width-lengths")]
 use crate::varint::Variable;
 use crate::{Binser, Error};
 
