@@ -1,13 +1,12 @@
 # packet-binser
 
-`packet-binser` is a Rust library with a main goal of (de)serialization of network packets. It can be used for any binary data as a `#[header]` is not required.
+`packet-binser` is a Rust library for simple (de)serialization of network packets.
 
-It provides default implementations for common types and allows for easy implementations with an optional derive macro.
+It provides default implementations for predictibly sized primitive types as well as common std types.
 
 ## Features
-- Default implementations for primitive types, `Option`, `Vec`, arrays, and `String`.
-- Derive macros available to automatically implement serialization and deserialization.
-- Supports variable-length integer encoding with `packet_binser::varint::Variable<T>`. Signed integers are supported via zigzag encoding.
+- Derive macros available to automatically implement serialization and deserialization. (Enabled with the `derive` feature.)
+- Supports variable-length integer encoding with `packet_binser::varint::Variable<T>`. Signed integers are supported via zigzag encoding. (Enabled with the `varint` feature.)
 
 ## Getting Started
 
@@ -17,25 +16,27 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-packet-binser = "0.1.0" # or packet-binser = { version = "0.1.0", features = ["derive"] }
+# or latest version
+packet-binser = "0.2" # or packet-binser = { version = "0.2", features = [...] }
 ```
 
 ### Example Usage (Without derive)
 
 ```rust
-use packet_binser::{Binser, BytesReadExt, BytesWriteExt, lbytes};
+use packet_binser::{Binser, BytesReadExt, BytesWriteExt, Error};
 
 struct HandshakePacket(u8);
 
 impl Binser for HandshakePacket {
-   fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), lbytes::Error> {
-      buffer.write_u8(0x1)?; // packet id, not read in deserialize since it should be read elsewhere
-      self.0.serialize(buffer)?;
-      Ok(())
-   }
-	fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, lbytes::Error> {
-		Ok(Self(u8::deserialize(buffer)?)
-	}
+    fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error> {
+        buffer.write_u8(0x1)?; // packet id, not read in deserialize since it should be read elsewhere
+        self.0.serialize(buffer)?;
+        Ok(())
+    }
+
+    fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, Error> {
+        Ok(Self(u8::deserialize(buffer)?)
+    }
 }
 ```
 
@@ -45,31 +46,25 @@ impl Binser for HandshakePacket {
 use packet_binser::derive::Binser;
 
 #[derive(Binser)]
-#[header(0x1)]
-struct HandshakePacket(u8);
+#[repr(u8)]
+enum ClientPackets {
+    Handshake {
+        id: u8,
+    } = 0x1,
+}
 ```
 
-## Implementations
-
-We provide implementations of the `Binser` trait for primitive types, arrays, vectors, `Option`, and `String`.
-
-### Builtin Types
-
-The following builtin types are supported:
+## Default Implementations
 
 - `u8`, `u16`, `u32`, `u64`, `u128`
 - `i8`, `i16`, `i32`, `i64`, `i128`
 - `f32`, `f64`
 - `bool`
 - `std::string::String`
-
-### Arrays and Vectors
-
-Requires the inner type to impl `Binser`.
-
-### Options
-
-Requires the inner type to impl `Binser`.
+- `std::option::Option<T: Binser>`
+- `std::vec::Vec<T: Binser>`
+- `[T; N] where T: Binser`
+- `packet_binser::varint::Variable`
 
 ## License
 
@@ -77,4 +72,4 @@ This project is dual licensed under both the [MIT License](./LICENSE-MIT) and [A
 
 ---
 
-Feel free to [open an issue](https://github.com/lillianrubyrose/packet-binser/issues/new) at if you encounter any problems or have suggestions.
+Feel free to [open an issue](https://github.com/lillianrubyrose/packet-binser/issues/new) if you encounter any problems or have suggestions.
