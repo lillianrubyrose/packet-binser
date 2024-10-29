@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic)]
+
 pub mod impls;
 #[cfg(feature = "varint")]
 pub mod varint;

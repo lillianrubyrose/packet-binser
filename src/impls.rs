@@ -31,15 +31,14 @@ impl_nums!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
 
 impl Binser for bool {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error> {
-		buffer.write_u8(*self as u8)?;
+		buffer.write_u8(u8::from(*self))?;
 		Ok(())
 	}
 
 	fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, Error> {
 		Ok(match buffer.read_u8()? {
 			0 => false,
-			1 => true,
-			_ => todo!("Error or default to false?"),
+			1.. => true,
 		})
 	}
 }
