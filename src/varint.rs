@@ -3,7 +3,7 @@ use std::ops::{Deref, DerefMut};
 use crate::{Binser, Error};
 use zigzag::{ZigZagDecode, ZigZagEncode};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Variable<T>(pub T);
 
 impl<T> Deref for Variable<T> {

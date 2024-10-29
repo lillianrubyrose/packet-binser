@@ -35,7 +35,7 @@ impl Binser for HandshakePacket {
     }
 
     fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, Error> {
-        Ok(Self(u8::deserialize(buffer)?)
+        Ok(Self(u8::deserialize(buffer)?))
     }
 }
 ```

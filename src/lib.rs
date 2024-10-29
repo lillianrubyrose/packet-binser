@@ -32,3 +32,63 @@ pub trait Binser: Sized {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error>;
 	fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, Error>;
 }
+
+#[cfg(test)]
+mod tests {
+	use super::{Binser, Error};
+	use std::{fmt::Debug, io::Cursor};
+
+	fn binserde<T: Binser + PartialEq + Debug>(value: T) -> Result<(), Error> {
+		let mut buffer = Vec::new();
+		value.serialize(&mut buffer)?;
+		let de = T::deserialize(&mut Cursor::new(buffer))?;
+		Ok(assert_eq!(value, de, "binserde failed for {:?}", value))
+	}
+
+	#[test]
+	fn test_binserde() -> Result<(), Error> {
+		binserde(true)?;
+		binserde(false)?;
+		binserde(69_u32)?;
+		binserde(-69_i32)?;
+		binserde(4.2_f32)?;
+
+		binserde(Some(42_u8))?;
+		binserde(None::<u8>)?;
+		binserde(Some(Some(84_u16)))?;
+		binserde(Some(None::<u16>))?;
+
+		binserde(String::from("Hello, world!"))?;
+		binserde(String::from("❤️🎃😊"))?;
+		binserde(String::from(""))?;
+
+		binserde([-69_i8, 0, 1, 2])?;
+		binserde(vec![-69_i32, 0, 1, 2])?;
+		binserde(Vec::<i32>::new())?;
+		binserde(vec![u8::MAX, u8::MIN, 127, 128])?;
+
+		binserde(u64::MAX)?;
+		binserde(i64::MIN)?;
+
+		Ok(())
+	}
+
+	#[cfg(feature = "varint")]
+	#[test]
+	fn test_varint_binserde() -> Result<(), Error> {
+		use super::varint::Variable;
+
+		binserde(Variable(0_u8))?;
+		binserde(Variable(127_i8))?;
+		binserde(Variable(128_u32))?;
+		binserde(Variable(-69_i8))?;
+
+		binserde(Variable(u64::MAX))?;
+		binserde(Variable(i64::MIN))?;
+
+		binserde(vec![Variable(0_u16), Variable(1), Variable(2)])?;
+		binserde(Vec::<Variable<i32>>::new())?;
+
+		Ok(())
+	}
+}
