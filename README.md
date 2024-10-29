@@ -23,11 +23,11 @@ packet-binser = "0.1.0" # or packet-binser = { version = "0.1.0", features = ["d
 ### Example Usage (Without derive)
 
 ```rust
-use packet_binser::{PacketSerde, BytesReadExt, BytesWriteExt, lbytes};
+use packet_binser::{Binser, BytesReadExt, BytesWriteExt, lbytes};
 
 struct HandshakePacket(u8);
 
-impl PacketSerde for HandshakePacket {
+impl Binser for HandshakePacket {
    fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), lbytes::Error> {
       buffer.write_u8(0x1)?; // packet id, not read in deserialize since it should be read elsewhere
       self.0.serialize(buffer)?;
@@ -42,16 +42,16 @@ impl PacketSerde for HandshakePacket {
 ### Example Usage (With derive)
 
 ```rust
-use packet_binser::derive::PacketSerde;
+use packet_binser::derive::Binser;
 
-#[derive(PacketSerde)]
+#[derive(Binser)]
 #[header(0x1)]
 struct HandshakePacket(u8);
 ```
 
 ## Implementations
 
-We provide implementations of the `PacketSerde` trait for primitive types, arrays, vectors, `Option`, and `String`.
+We provide implementations of the `Binser` trait for primitive types, arrays, vectors, `Option`, and `String`.
 
 ### Builtin Types
 
@@ -65,11 +65,11 @@ The following builtin types are supported:
 
 ### Arrays and Vectors
 
-Requires the inner type to impl `PacketSerde`.
+Requires the inner type to impl `Binser`.
 
 ### Options
 
-Requires the inner type to impl `PacketSerde`.
+Requires the inner type to impl `Binser`.
 
 ## License
 

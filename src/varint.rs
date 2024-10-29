@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::PacketSerde;
+use crate::{Binser, Error};
 use zigzag::{ZigZagDecode, ZigZagEncode};
 
 #[derive(Debug, Clone, Copy)]
@@ -22,8 +22,8 @@ impl<T> DerefMut for Variable<T> {
 
 macro_rules! impl_unsigned {
 	($ty:ty) => {
-		impl PacketSerde for Variable<$ty> {
-			fn serialize<B: lbytes::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), lbytes::Error> {
+		impl Binser for Variable<$ty> {
+			fn serialize<B: lbytes::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error> {
 				let mut this = self.0;
 				if this == 0 {
 					buffer.write_u8(0)?;
@@ -42,7 +42,7 @@ macro_rules! impl_unsigned {
 				Ok(())
 			}
 
-			fn deserialize<B: lbytes::BytesReadExt>(buffer: &mut B) -> Result<Self, lbytes::Error> {
+			fn deserialize<B: lbytes::BytesReadExt>(buffer: &mut B) -> Result<Self, Error> {
 				let mut res = 0;
 				let mut i = 0;
 
@@ -66,13 +66,13 @@ macro_rules! impl_unsigned {
 macro_rules! impl_signed {
 	($bits:expr) => {
 		::paste::paste! {
-		impl PacketSerde for Variable<[<i$bits>]> {
-			fn serialize<B: lbytes::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), lbytes::Error> {
+		impl Binser for Variable<[<i$bits>]> {
+			fn serialize<B: lbytes::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error> {
 				Variable(self.0.zigzag_encode()).serialize(buffer)?;
 				Ok(())
 			}
 
-			fn deserialize<B: lbytes::BytesReadExt>(buffer: &mut B) -> Result<Self, lbytes::Error> {
+			fn deserialize<B: lbytes::BytesReadExt>(buffer: &mut B) -> Result<Self, Error> {
 				Ok(Variable(Variable::<[<u$bits>]>::deserialize(buffer)?.0.zigzag_decode()))
 			}
 		}

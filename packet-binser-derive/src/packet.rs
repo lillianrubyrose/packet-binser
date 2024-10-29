@@ -36,10 +36,10 @@ fn impl_struct(attrs: &[Attribute], data: &DataStruct, ident: Ident) -> Result<T
 	let fields_serialize = data.fields.iter().map(|field| {
 		let idx = Index::from(i);
 		let tokens = if let Some(field_ident) = &field.ident {
-			quote! { ::packet_binser::PacketSerde::serialize(&self.#field_ident, buffer)?; }
+			quote! { ::packet_binser::Binser::serialize(&self.#field_ident, buffer)?; }
 		} else {
 			tuple_struct = true;
-			quote! { ::packet_binser::PacketSerde::serialize(&self.#idx, buffer)?; }
+			quote! { ::packet_binser::Binser::serialize(&self.#idx, buffer)?; }
 		};
 
 		i += 1;
@@ -61,7 +61,7 @@ fn impl_struct(attrs: &[Attribute], data: &DataStruct, ident: Ident) -> Result<T
 	#[cfg(not(feature = "variable-width-lengths"))]
 	let serialize_header = quote! { (#header as u16).serialize(buffer)?; };
 	let serialize_fn = quote! {
-		fn serialize<B: ::packet_binser::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), ::packet_binser::lbytes::Error> {
+		fn serialize<B: ::packet_binser::BytesWriteExt>(&self, buffer: &mut B) -> Result<(), ::packet_binser::Error> {
 		  #serialize_header
 		  #( #fields_serialize )*
 		  Ok(())
@@ -70,20 +70,20 @@ fn impl_struct(attrs: &[Attribute], data: &DataStruct, ident: Ident) -> Result<T
 
 	let deserialize_fn = if tuple_struct {
 		quote! {
-		  fn deserialize<B: ::packet_binser::BytesReadExt>(buffer: &mut B) -> Result<Self, ::packet_binser::lbytes::Error> {
+		  fn deserialize<B: ::packet_binser::BytesReadExt>(buffer: &mut B) -> Result<Self, ::packet_binser::Error> {
 			  Ok(Self(#( #fields_deserialize )*))
 		  }
 		}
 	} else {
 		quote! {
-		  fn deserialize<B: ::packet_binser::BytesReadExt>(buffer: &mut B) -> Result<Self, ::packet_binser::lbytes::Error> {
+		  fn deserialize<B: ::packet_binser::BytesReadExt>(buffer: &mut B) -> Result<Self, ::packet_binser::Error> {
 			  Ok(Self { #( #fields_deserialize )* })
 		  }
 		}
 	};
 
 	Ok(quote! {
-	   impl ::packet_binser::PacketSerde for #ident {
+	   impl ::packet_binser::Binser for #ident {
 		   #serialize_fn
 		   #deserialize_fn
 	   }

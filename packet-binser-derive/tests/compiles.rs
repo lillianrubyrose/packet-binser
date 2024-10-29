@@ -1,10 +1,10 @@
-use packet_binser_derive::{Packet, PacketSerde};
+use packet_binser_derive::{Binser, Packet};
 
 #[derive(Packet)]
 #[header = 0x1]
 struct HandshakePacket(u8);
 
-#[derive(PacketSerde)]
+#[derive(Binser)]
 struct MeowData {
 	message: String,
 }
@@ -13,4 +13,12 @@ struct MeowData {
 #[header = 0x2]
 struct MeowPacket {
 	data: MeowData,
+}
+
+#[derive(Binser)]
+enum TestPackets {
+	A,
+	B,
+	C,
+	D,
 }
