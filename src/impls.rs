@@ -46,7 +46,7 @@ impl Binser for bool {
 impl<T: Binser, const N: usize> Binser for [T; N] {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error> {
 		#[cfg(feature = "variable-with-lengths")]
-		Variable(N as u64).serialize(buffer)?;
+		Variable(u32::try_from(N)?).serialize(buffer)?;
 		#[cfg(not(feature = "variable-with-lengths"))]
 		u32::try_from(N)?.serialize(buffer)?;
 
@@ -59,7 +59,7 @@ impl<T: Binser, const N: usize> Binser for [T; N] {
 
 	fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, Error> {
 		#[cfg(feature = "variable-width-lengths")]
-		let len = *Variable::<u64>::deserialize(buffer)?;
+		let len = *Variable::<u32>::deserialize(buffer)?;
 		#[cfg(not(feature = "variable-width-lengths"))]
 		let len = u32::deserialize(buffer)?;
 		let mut vec: Vec<T> = Vec::with_capacity(len as usize);
@@ -77,7 +77,7 @@ impl<T: Binser, const N: usize> Binser for [T; N] {
 impl<T: Binser> Binser for Vec<T> {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error> {
 		#[cfg(feature = "variable-with-lengths")]
-		Variable(self.len() as u64).serialize(buffer)?;
+		Variable(u32::try_from(self.len())?).serialize(buffer)?;
 		#[cfg(not(feature = "variable-with-lengths"))]
 		u32::try_from(self.len())?.serialize(buffer)?;
 
@@ -90,7 +90,7 @@ impl<T: Binser> Binser for Vec<T> {
 
 	fn deserialize<B: BytesReadExt>(buffer: &mut B) -> Result<Self, Error> {
 		#[cfg(feature = "variable-width-lengths")]
-		let len = *Variable::<u64>::deserialize(buffer)?;
+		let len = *Variable::<u32>::deserialize(buffer)?;
 		#[cfg(not(feature = "variable-width-lengths"))]
 		let len = u32::deserialize(buffer)?;
 		let mut vec: Vec<T> = Vec::with_capacity(len as usize);
@@ -124,7 +124,7 @@ impl<T: Binser> Binser for Option<T> {
 impl Binser for String {
 	fn serialize<B: BytesWriteExt>(&self, buffer: &mut B) -> Result<(), Error> {
 		#[cfg(feature = "variable-with-lengths")]
-		Variable(self.len() as u64).serialize(buffer)?;
+		Variable(u32::try_from(self.len())?).serialize(buffer)?;
 		#[cfg(not(feature = "variable-with-lengths"))]
 		u32::try_from(self.len())?.serialize(buffer)?;
 		buffer.write_all(self.as_bytes())?;
