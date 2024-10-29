@@ -48,7 +48,7 @@ impl<T: Binser, const N: usize> Binser for [T; N] {
 		#[cfg(feature = "variable-with-lengths")]
 		Variable(N as u64).serialize(buffer)?;
 		#[cfg(not(feature = "variable-with-lengths"))]
-		(N as u32).serialize(buffer)?;
+		u32::try_from(N)?.serialize(buffer)?;
 
 		for ele in self {
 			ele.serialize(buffer)?;
@@ -79,7 +79,7 @@ impl<T: Binser> Binser for Vec<T> {
 		#[cfg(feature = "variable-with-lengths")]
 		Variable(self.len() as u64).serialize(buffer)?;
 		#[cfg(not(feature = "variable-with-lengths"))]
-		(self.len() as u32).serialize(buffer)?;
+		u32::try_from(self.len())?.serialize(buffer)?;
 
 		for ele in self {
 			ele.serialize(buffer)?;
@@ -126,7 +126,7 @@ impl Binser for String {
 		#[cfg(feature = "variable-with-lengths")]
 		Variable(self.len() as u64).serialize(buffer)?;
 		#[cfg(not(feature = "variable-with-lengths"))]
-		(self.len() as u32).serialize(buffer)?;
+		u32::try_from(self.len())?.serialize(buffer)?;
 		buffer.write_all(self.as_bytes())?;
 		Ok(())
 	}

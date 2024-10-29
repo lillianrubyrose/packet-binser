@@ -2,10 +2,10 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{Attribute, Data, DataStruct, DeriveInput, Error, Expr, ExprLit, Ident, Index, Lit, Result};
 
-pub fn impl_packet(input: DeriveInput) -> Result<TokenStream> {
+pub fn impl_packet(input: &DeriveInput) -> Result<TokenStream> {
 	let ident = input.ident.clone();
 	match &input.data {
-		Data::Struct(data) => Ok(impl_struct(&input.attrs, data, ident)?),
+		Data::Struct(data) => Ok(impl_struct(&input.attrs, data, &ident)?),
 		_ => Err(Error::new_spanned(
 			ident,
 			"Packet is only implemented for structs currently",
@@ -13,7 +13,7 @@ pub fn impl_packet(input: DeriveInput) -> Result<TokenStream> {
 	}
 }
 
-fn impl_struct(attrs: &[Attribute], data: &DataStruct, ident: Ident) -> Result<TokenStream> {
+fn impl_struct(attrs: &[Attribute], data: &DataStruct, ident: &Ident) -> Result<TokenStream> {
 	let mut header: Option<u64> = None;
 
 	for attr in attrs {
@@ -28,7 +28,7 @@ fn impl_struct(attrs: &[Attribute], data: &DataStruct, ident: Ident) -> Result<T
 	}
 
 	let Some(header) = header else {
-		return Err(Error::new_spanned(&ident, "#[header] must be present"));
+		return Err(Error::new_spanned(ident, "#[header] must be present"));
 	};
 
 	let mut i = 0;

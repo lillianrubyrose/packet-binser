@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic)]
+#![allow(clippy::missing_errors_doc)]
 
 pub mod impls;
 #[cfg(feature = "varint")]
@@ -20,6 +21,8 @@ pub enum Error {
 	FromUtf8Error(#[from] FromUtf8Error),
 	#[error(transparent)]
 	Io(#[from] std::io::Error),
+	#[error(transparent)]
+	TryFromInt(#[from] std::num::TryFromIntError),
 	#[error(transparent)]
 	Lbytes(#[from] lbytes::Error),
 }
