@@ -42,8 +42,8 @@ impl Binser for HandshakePacket {
 
 ### Example Usage (With derive)
 
-```rust
-use packet_binser::derive::Binser;
+```ignore rust
+use packet_binser::proc::Binser;
 
 #[derive(Binser)]
 #[repr(u8)]

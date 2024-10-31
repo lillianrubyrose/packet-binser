@@ -10,7 +10,7 @@ use std::string::FromUtf8Error;
 
 pub use lbytes::{BytesReadExt, BytesWriteExt};
 #[cfg(feature = "derive")]
-pub use packet_binser_derive as derive;
+pub use packet_binser_derive as proc;
 
 use thiserror::Error;
 
