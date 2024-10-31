@@ -37,22 +37,12 @@ fn test_struct() -> Result<(), Box<dyn std::error::Error>> {
 	data.serialize(&mut buffer)?;
 	buffer.set_position(0);
 
-	#[cfg(not(feature = "variable-width-lengths"))]
 	assert_eq!(
 		// 1u8
 		// 5u32 BE
 		// "Hello" ascii
 		// 2u8
 		&[1, 0, 0, 0, 5, 72, 101, 108, 108, 111, 2],
-		buffer.into_inner().as_slice()
-	);
-	#[cfg(feature = "variable-width-lengths")]
-	assert_eq!(
-		// 1u8
-		// 5 u32 VarInt BE
-		// "Hello" ascii
-		// 2u8
-		&[1, 5, 72, 101, 108, 108, 111, 2],
 		buffer.into_inner().as_slice()
 	);
 
@@ -70,7 +60,6 @@ fn test_packet() -> Result<(), Box<dyn std::error::Error>> {
 	data.serialize(&mut buffer)?;
 	buffer.set_position(0);
 
-	#[cfg(not(feature = "variable-width-lengths"))]
 	assert_eq!(
 		// 69u16 BE packet id
 		// 1u32 BE
@@ -78,16 +67,6 @@ fn test_packet() -> Result<(), Box<dyn std::error::Error>> {
 		// "Hello" ascii
 		// 0u16 BE client type enum variant
 		&[0, 69, 0, 0, 0, 1, 0, 0, 0, 5, 72, 101, 108, 108, 111, 0, 0],
-		buffer.clone().into_inner().as_slice()
-	);
-	#[cfg(feature = "variable-width-lengths")]
-	assert_eq!(
-		// 69u16 BE packet id
-		// 1u32 BE
-		// 5u32 BE VarInt string length
-		// "Hello" ascii
-		// 0u16 BE client type enum variant
-		&[0, 69, 0, 0, 0, 1, 5, 72, 101, 108, 108, 111, 0, 0],
 		buffer.clone().into_inner().as_slice()
 	);
 

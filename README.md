@@ -6,7 +6,6 @@ It provides default implementations for predictibly sized primitive types as wel
 
 ## Features
 - Derive macros available to automatically implement serialization and deserialization. (Enabled with the `derive` feature.)
-- Supports variable-length integer encoding with `packet_binser::varint::Variable<T>`. Signed integers are supported via zigzag encoding. (Enabled with the `varint` feature.)
 
 ## Getting Started
 
@@ -64,7 +63,6 @@ enum ClientPackets {
 - `std::option::Option<T: Binser>`
 - `std::vec::Vec<T: Binser>`
 - `[T; N] where T: Binser`
-- `packet_binser::varint::Variable`
 
 ## License
 

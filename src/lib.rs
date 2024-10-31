@@ -3,8 +3,6 @@
 #![doc = include_str!("../README.md")]
 
 pub mod impls;
-#[cfg(feature = "varint")]
-pub mod varint;
 
 use std::string::FromUtf8Error;
 
@@ -69,25 +67,6 @@ mod tests {
 
 		binserde(u64::MAX)?;
 		binserde(i64::MIN)?;
-
-		Ok(())
-	}
-
-	#[cfg(feature = "varint")]
-	#[test]
-	fn test_varint_binserde() -> Result<(), Error> {
-		use super::varint::Variable;
-
-		binserde(Variable(0_u8))?;
-		binserde(Variable(127_i8))?;
-		binserde(Variable(128_u32))?;
-		binserde(Variable(-69_i8))?;
-
-		binserde(Variable(u64::MAX))?;
-		binserde(Variable(i64::MIN))?;
-
-		binserde(vec![Variable(0_u16), Variable(1), Variable(2)])?;
-		binserde(Vec::<Variable<i32>>::new())?;
 
 		Ok(())
 	}
